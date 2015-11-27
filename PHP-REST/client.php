@@ -17,43 +17,40 @@
 /// SETUP - NEED TO BE CHANGED
 $token = 'acabec9d20933913f14301785324f579';
 $domainname = 'http://www.yourmoodle.com';
-$functionname = 'core_user_create_users';
+$functionname = 'core_user_update_users';
 
 // REST RETURNED VALUES FORMAT
-$restformat = 'xml'; //Also possible in Moodle 2.2 and later: 'json'
+$restformat = 'json'; //Also possible in Moodle 2.2 and later: 'json'
                      //Setting it to 'json' will fail all calls on earlier Moodle version
 
 //////// moodle_user_create_users ////////
 
 /// PARAMETERS - NEED TO BE CHANGED IF YOU CALL A DIFFERENT FUNCTION
 $user1 = new stdClass();
-$user1->username = 'testusername1';
-$user1->password = 'testpassword1';
-$user1->firstname = 'testfirstname1';
-$user1->lastname = 'testlastname1';
-$user1->email = 'testemail1@moodle.com';
-$user1->auth = 'manual';
-$user1->idnumber = 'testidnumber1';
-$user1->lang = 'en';
-$user1->theme = 'standard';
-$user1->timezone = '-12.5';
-$user1->mailformat = 0;
-$user1->description = 'Hello World!';
-$user1->city = 'testcity1';
-$user1->country = 'au';
-$preferencename1 = 'preference1';
-$preferencename2 = 'preference2';
-$user1->preferences = array(
-    array('type' => $preferencename1, 'value' => 'preferencevalue1'),
-    array('type' => $preferencename2, 'value' => 'preferencevalue2'));
-$user2 = new stdClass();
-$user2->username = 'testusername2';
-$user2->password = 'testpassword2';
-$user2->firstname = 'testfirstname2';
-$user2->lastname = 'testlastname2';
-$user2->email = 'testemail2@moodle.com';
-$user2->timezone = 'Pacific/Port_Moresby';
-$users = array($user1, $user2);
+$user1->id = 2;
+
+// Upload a user picture example.
+/// UPLOAD PARAMETERS
+//Note: check "Maximum uploaded file size" in your Moodle "Site Policies".
+$imagepath = '../../sample-ws-clients/PHP-HTTP-filehandling/image_to_upload.jpg'; //CHANGE THIS !
+$filepath = '/'; //put the file to the root of your private file area. //OPTIONAL
+
+/// UPLOAD IMAGE - Moodle 2.1 and later
+$params = array('file_box' => "@".$imagepath,'filepath' => $filepath, 'token' => $token, 'filearea' => 'draft');
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_HEADER, 0);
+curl_setopt($ch, CURLOPT_VERBOSE, 0);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible;)");
+curl_setopt($ch, CURLOPT_URL, $domainname . '/webservice/upload.php');
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+$response = curl_exec($ch);
+print_r($response);
+$data = json_decode($response);
+
+$user1->userpicture = $data[0]->itemid;
+$users = array($user1);
 $params = array('users' => $users);
 
 /// REST CALL
